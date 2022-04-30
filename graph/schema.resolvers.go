@@ -7,20 +7,39 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/naufalsuryasumirat/graphql-go-mongodb/database"
 	"github.com/naufalsuryasumirat/graphql-go-mongodb/graph/generated"
 	"github.com/naufalsuryasumirat/graphql-go-mongodb/graph/model"
 )
 
-func (r *mutationResolver) CreateDog(ctx context.Context, input *model.NewDog) (*model.Dog, error) {
+var db = database.Connect()
+
+func (r *mutationResolver) CreateAuthor(ctx context.Context, input *model.AuthorInput) (*model.Author, error) {
+	return db.AddAuthor(input), nil
+}
+
+func (r *mutationResolver) CreateBook(ctx context.Context, input *model.BookInput, idAuthor *string) (*model.Book, error) {
+	return db.AddBook(input, idAuthor), nil
+}
+
+func (r *queryResolver) Book(ctx context.Context, id string) (*model.Book, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Dog(ctx context.Context, id string) (*model.Dog, error) {
+func (r *queryResolver) Books(ctx context.Context) ([]*model.Book, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Dogs(ctx context.Context) ([]*model.Dog, error) {
+func (r *queryResolver) BooksByAuthor(ctx context.Context, idAuthor string) ([]*model.Book, error) {
 	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Author(ctx context.Context, id string) (*model.Author, error) {
+	return db.FindAuthorByID(id), nil
+}
+
+func (r *queryResolver) Authors(ctx context.Context) ([]*model.Author, error) {
+	return db.AllAuthors(), nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -2,13 +2,23 @@
 
 package model
 
-type Dog struct {
-	ID        string `json:"_id"`
+type Author struct {
+	ID        string `json:"_id" bson:"_id"`
 	Name      string `json:"name"`
-	IsGoodBoi bool   `json:"isGoodBoi"`
+	Birthdate string `json:"birthdate"`
 }
 
-type NewDog struct {
+type AuthorInput struct {
 	Name      string `json:"name"`
-	IsGoodBoi bool   `json:"isGoodBoi"`
+	Birthdate string `json:"birthdate"`
+}
+
+type Book struct {
+	ID     string  `json:"_id" bson:"_id"`
+	Title  string  `json:"title"`
+	Author *Author `json:"author"`
+}
+
+type BookInput struct {
+	Title string `json:"title"`
 }

@@ -6,7 +6,7 @@ tmp_dir = "./tmp/"
   bin = "./tmp/main.exe"
   cmd = "go build -o ./tmp/main.exe ./server.go"
   delay = 1000
-  exclude_dir = ["assets", "tmp", "vendor", "testdata"]
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "backup", "test"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
@@ -17,7 +17,7 @@ tmp_dir = "./tmp/"
   kill_delay = "0s"
   log = "air.log"
   send_interrupt = false
-  stop_on_error = true
+  stop_on_error = false
 
 [color]
   app = ""
@@ -33,4 +33,4 @@ tmp_dir = "./tmp/"
   clean_on_exit = true
 
 [screen]
-  clear_on_rebuild = true
+  clear_on_rebuild = false

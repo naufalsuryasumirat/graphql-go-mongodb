@@ -1,19 +1,33 @@
-type Dog {
+type Author {
   _id: String!
   name: String!
-  isGoodBoi: Boolean!
+  birthdate: String!
+}
+
+type Book {
+  _id: String!
+  title: String!
+  author: Author!
 }
 
 type Query {
-  dog(_id: String!): Dog!
-  dogs: [Dog!]!
+  book(_id: String!): Book!
+  books: [Book!]!
+  booksByAuthor(_idAuthor: String!): [Book!]!
+  author(_id: String!): Author!
+  authors: [Author!]!
 }
 
-input NewDog {
+input AuthorInput {
   name: String!
-  isGoodBoi: Boolean!
+  birthdate: String!
+}
+
+input BookInput {
+  title: String!
 }
 
 type Mutation {
-  createDog(input: NewDog): Dog!
+  createAuthor(input: AuthorInput): Author!
+  createBook(input: BookInput, _idAuthor: String): Book!
 }
