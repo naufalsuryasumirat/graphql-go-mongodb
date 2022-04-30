@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/naufalsuryasumirat/graphql-go-mongodb/database"
 	"github.com/naufalsuryasumirat/graphql-go-mongodb/graph/generated"
@@ -23,15 +22,15 @@ func (r *mutationResolver) CreateBook(ctx context.Context, input *model.BookInpu
 }
 
 func (r *queryResolver) Book(ctx context.Context, id string) (*model.Book, error) {
-	panic(fmt.Errorf("not implemented"))
+	return db.FindBookByID(id), nil
 }
 
 func (r *queryResolver) Books(ctx context.Context) ([]*model.Book, error) {
-	panic(fmt.Errorf("not implemented"))
+	return db.AllBooks(), nil
 }
 
 func (r *queryResolver) BooksByAuthor(ctx context.Context, idAuthor string) ([]*model.Book, error) {
-	panic(fmt.Errorf("not implemented"))
+	return db.AllBooksByAuthor(idAuthor), nil
 }
 
 func (r *queryResolver) Author(ctx context.Context, id string) (*model.Author, error) {

@@ -116,19 +116,7 @@ func (db *DB) AllAuthors() []*model.Author {
 }
 
 func (db *DB) AddBook(input *model.BookInput, idAuthor *string) *model.Book {
-	collectionAuthors := db.client.Database("library").Collection("authors")
-	ctxA, cancelA := context.WithTimeout(context.Background(), short)
-	defer cancelA()
-
-	_idAuthor, _ := primitive.ObjectIDFromHex(*idAuthor)
-	res := collectionAuthors.FindOne(ctxA, bson.M{"_id": _idAuthor})
-	if res.Err() != nil {
-		log.Fatal(res.Err())
-	}
-
-	authorDB := AuthorDB{}
-	res.Decode(&authorDB)
-	author := convertAuthorType(&authorDB)
+	author := db.FindAuthorByID(*idAuthor)
 
 	collectionBooks := db.client.Database("library").Collection("books")
 	ctx, cancel := context.WithTimeout(context.Background(), short)
@@ -151,10 +139,72 @@ func (db *DB) AddBook(input *model.BookInput, idAuthor *string) *model.Book {
 	}
 }
 
+func (db *DB) FindBookByID(id string) *model.Book {
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	collection := db.client.Database("library").Collection("books")
+	ctx, cancel := context.WithTimeout(context.Background(), short)
+	defer cancel()
+
+	res := collection.FindOne(ctx, bson.M{"_id": objId})
+	bookDB := BookDB{}
+	res.Decode(&bookDB)
+
+	author := db.FindAuthorByID(bookDB.IDAuth)
+
+	return convertBookType(&bookDB, author)
+}
+
+func (db *DB) AllBooks() []*model.Book {
+	collection := db.client.Database("library").Collection("books")
+	ctx, cancel := context.WithTimeout(context.Background(), long)
+	defer cancel()
+
+	cur, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var books []*model.Book
+	for cur.Next(ctx) {
+		bookDB := BookDB{}
+		err := cur.Decode(&bookDB)
+		if err != nil {
+			log.Fatal(err)
+		}
+		author := db.FindAuthorByID(bookDB.IDAuth)
+		books = append(books, convertBookType(&bookDB, author))
+	}
+
+	return books
+}
+
+func (db *DB) AllBooksByAuthor(id string) []*model.Book {
+	books := db.AllBooks()
+	var booksBy []*model.Book
+	for _, element := range books {
+		if element.Author.ID == id {
+			booksBy = append(booksBy, element)
+		}
+	}
+	return booksBy
+}
+
 func convertAuthorType(authorDB *AuthorDB) *model.Author {
 	return &model.Author{
 		ID: 		authorDB.ID,
 		Name: 		authorDB.Name,
 		Birthdate: 	authorDB.Birthdate.Time().Format(TimeFormat),
+	}
+}
+
+func convertBookType(bookDB *BookDB, author *model.Author) *model.Book {
+	return &model.Book{
+		ID: 	bookDB.ID,
+		Title: 	bookDB.Title,
+		Author: author,
 	}
 }
