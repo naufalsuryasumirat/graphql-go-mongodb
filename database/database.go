@@ -168,29 +168,20 @@ func (db *DB) AllBooks() []*model.Book {
 		log.Fatal(err)
 	}
 
-	var books []*model.Book
-	for cur.Next(ctx) {
-		bookDB := BookDB{}
-		err := cur.Decode(&bookDB)
-		if err != nil {
-			log.Fatal(err)
-		}
-		author := db.FindAuthorByID(bookDB.IDAuth)
-		books = append(books, convertBookType(&bookDB, author))
-	}
-
-	return books
+	return convertBooks(cur, &ctx, db)
 }
 
 func (db *DB) AllBooksByAuthor(id string) []*model.Book {
-	books := db.AllBooks()
-	var booksBy []*model.Book
-	for _, element := range books {
-		if element.Author.ID == id {
-			booksBy = append(booksBy, element)
-		}
+	collection := db.client.Database("library").Collection("books")
+	ctx, cancel := context.WithTimeout(context.Background(), long)
+	defer cancel()
+
+	cur, err := collection.Find(ctx, bson.D{bson.E{Key: "idauth", Value: id}})
+	if err != nil {
+		log.Fatal(err)
 	}
-	return booksBy
+
+	return convertBooks(cur, &ctx, db)
 }
 
 func convertAuthorType(authorDB *AuthorDB) *model.Author {
@@ -207,4 +198,18 @@ func convertBookType(bookDB *BookDB, author *model.Author) *model.Book {
 		Title: 	bookDB.Title,
 		Author: author,
 	}
+}
+
+func convertBooks(cur *mongo.Cursor, ctx *context.Context, db *DB) []*model.Book {
+	var books []*model.Book
+	for cur.Next(*ctx) {
+		bookDB := BookDB{}
+		err := cur.Decode(&bookDB)
+		if err != nil {
+			log.Fatal(err)
+		}
+		author := db.FindAuthorByID(bookDB.IDAuth)
+		books = append(books, convertBookType(&bookDB, author))
+	}
+	return books
 }
